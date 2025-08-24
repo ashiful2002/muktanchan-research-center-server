@@ -9,8 +9,8 @@ const bcrypt = require("bcrypt");
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5175",
-  "https://real-estate-client-2025.web.app",
-  "https://real-estate-client-2025.firebaseapp.com",
+  "https://muktanchal-research-centre.web.app",
+  "https://muktanchal-research-centre.firebaseapp.com",
 ];
 
 app.use(
@@ -75,6 +75,36 @@ async function run() {
       }
     });
 
+    app.put("/image-gallery/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const updatedData = req.body;
+
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).send({ message: "Invalid ID" });
+        }
+
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = { $set: updatedData };
+
+        const result = await imageGalleryCollection.updateOne(
+          filter,
+          updatedDoc
+        );
+
+        if (result.modifiedCount === 0) {
+          return res
+            .status(404)
+            .send({ message: "Gallery Item Not Found or No Changes Made" });
+        }
+
+        res.send({ message: "Gallery item updated successfully" });
+      } catch (error) {
+        console.log("failed to update gallery item", error);
+        res.status(500).send({ message: "Failed to update gallery item" });
+      }
+    });
+
     app.post("/image-gallery", async (req, res) => {
       const payload = req.body;
       const result = await imageGalleryCollection.insertOne(payload);
@@ -90,6 +120,16 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await agrodoothCollection.findOne(query);
+      res.send(result);
+    });
+    // update agrodooth
+    app.put("/agrodooth/:id", async (req, res) => {
+      const { id } = req.params;
+      const updatedData = req.body;
+
+      const find = { _id: new ObjectId(id) };
+      const updatedDoc = { $set: updatedData };
+      const result = await agrodoothCollection.updateOne(find, updatedDoc);
       res.send(result);
     });
     // delete agrodooth
@@ -180,8 +220,8 @@ async function run() {
       }
     });
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged MongoDB deployment successfully!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged MongoDB deployment successfully!");
   } catch (err) {
     console.error(err);
   }
